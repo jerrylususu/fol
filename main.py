@@ -13,7 +13,6 @@ y = Variable("y")
 z = Variable("z")
 Child = PredicateSymbol("Child", 2)
 Descendant = PredicateSymbol("Descendant", 2)
-formula = ForAll(x, ForAll(y, (Or(Child(x, y), Exists(z, Implies(Or(Child(x, z), Descendant(z, y)), Descendant(x, y)))))))
+formula = ForAll(x,
+                 ForAll(y, (Or(Child(x, y), Exists(z, Implies(Or(Child(x, z), Descendant(z, y)), Descendant(x, y)))))))
 print(formula)
-
-

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import List, Union
+from typing import List, Union, Tuple
 
 
 class Term(object):
@@ -15,7 +15,7 @@ class Term(object):
         self.param = param
 
     def __repr__(self):
-        return f"Term({self.symbol!r}, {self.param!r})"
+        return f"T({self.symbol!r}, {self.param!r})"
 
 
 class Symbol(object):
@@ -24,7 +24,7 @@ class Symbol(object):
         self.ar = ar
 
     def __repr__(self):
-        return f"Symbol({self.name!r}, {self.ar!r})"
+        return f"S({self.name!r}, {self.ar!r})"
 
 
 class ConstantSymbol(Symbol, Term):
@@ -33,7 +33,7 @@ class ConstantSymbol(Symbol, Term):
         Term.__init__(self, self)
 
     def __repr__(self) -> str:
-        return f"ConstantSymbol({self.name!r})"
+        return f"CS({self.name!r})"
 
 
 class FunctionalSymbol(Symbol, Term):
@@ -42,7 +42,7 @@ class FunctionalSymbol(Symbol, Term):
         Term.__init__(self, self)
 
     def __repr__(self) -> str:
-        return f"FunctionalSymbol({self.name!r}, {self.ar!r})"
+        return f"FS({self.name!r}, {self.ar!r})"
 
 
 class PredicateSymbol(Symbol):
@@ -50,7 +50,7 @@ class PredicateSymbol(Symbol):
         super().__init__(name, ar)
 
     def __repr__(self) -> str:
-        return f"PredicateSymbol({self.name!r}, {self.ar!r})"
+        return f"PS({self.name!r}, {self.ar!r})"
 
     def __call__(self, *param: Term) -> AtomicFormula:
         return AtomicFormula(self, list(param))
@@ -62,7 +62,7 @@ class Variable(Symbol, Term):
         Term.__init__(self, self)
 
     def __repr__(self):
-        return f"Variable({self.name!r})"
+        return f"Var({self.name!r})"
 
 
 class Formula(object):
@@ -73,7 +73,7 @@ class Formula(object):
         self.content = content
 
     def __repr__(self):
-        return f"Formula({self.content!r})"
+        return f"F({self.content!r})"
 
 
 class AtomicFormula(Formula):
@@ -91,7 +91,12 @@ class AtomicFormula(Formula):
         super().__init__(self)
 
     def __repr__(self):
-        return f"AtomicFormula({self.symbol!r}, {self.param!r})"
+        return f"AF({self.symbol!r}, {self.param!r})"
+
+    def __eq__(self, other: AtomicFormula):
+        if not isinstance(other, AtomicFormula):
+            return False
+        return self.symbol == other.symbol and self.param == other.param
 
 
 class FoLOperator(Formula):
@@ -101,6 +106,9 @@ class FoLOperator(Formula):
 
     def __repr__(self) -> str:
         return f"FoLOperator({self.name!r})"
+
+    def recursive_apply(self, function):
+        raise Exception("no apply on base")
 
 
 class Quantifier(FoLOperator):
@@ -112,13 +120,16 @@ class Quantifier(FoLOperator):
     def __repr__(self):
         return f"Quantifier({self.name!r} {self.var!r} {self.formula!r})"
 
+    def recursive_apply(self, function):
+        self.formula = function(self.formula)
+
 
 class ForAll(Quantifier):
     def __init__(self, var: Variable, formula: Formula):
         super().__init__("ForAll", var, formula)
 
     def __repr__(self):
-        return f"(ForAll {self.var!r} {self.formula!r})"
+        return f"(∀ {self.var!r} {self.formula!r})"
 
 
 class Exists(Quantifier):
@@ -126,62 +137,71 @@ class Exists(Quantifier):
         super().__init__("Exists", var, formula)
 
     def __repr__(self):
-        return f"(Exists {self.var!r} {self.formula!r})"
+        return f"(∃ {self.var!r} {self.formula!r})"
 
 
 class BinaryLogicalConnector(FoLOperator):
-    def __init__(self, name: str):
+    def __init__(self, name: str, f1: Formula, f2: Formula):
         super().__init__(name)
+        self.formula1 = f1
+        self.formula2 = f2
 
     def __repr__(self) -> str:
         return f"BinaryLogicalConnector({self.name!r})"
 
+    def recursive_apply(self, function):
+        self.formula1 = function(self.formula1)
+        self.formula2 = function(self.formula2)
+
+    def __eq__(self, other: BinaryLogicalConnector):
+        return self.name == other.name and self.formula1 == other.formula1 and self.formula2 == other.formula2
+
 
 class And(BinaryLogicalConnector):
     def __init__(self, f1: Formula, f2: Formula):
-        super().__init__("And")
-        # FIXME
-        self.formula1 = f1
-        self.formula2 = f2
+        super().__init__("And", f1, f2)
+        # FIXME: put into a list?
 
     def __repr__(self):
-        return f"({self.formula1!r} And {self.formula2!r})"
+        return f"({self.formula1!r} ∧ {self.formula2!r})"
 
 
 class Or(BinaryLogicalConnector):
     def __init__(self, f1: Formula, f2: Formula):
-        super().__init__("Or")
-        self.formula1 = f1
-        self.formula2 = f2
+        super().__init__("Or", f1, f2)
 
     def __repr__(self):
-        return f"({self.formula1!r} Or {self.formula2!r})"
+        return f"({self.formula1!r} ∨ {self.formula2!r})"
 
 
 class Implies(BinaryLogicalConnector):
     def __init__(self, f1: Formula, f2: Formula):
-        super().__init__("Implies")
-        self.formula1 = f1
-        self.formula2 = f2
+        super().__init__("Implies", f1, f2)
 
     def __repr__(self):
-        return f"({self.formula1!r} -> {self.formula2!r})"
+        return f"({self.formula1!r} → {self.formula2!r})"
 
 
 class Equivalent(BinaryLogicalConnector):
     def __init__(self, f1: Formula, f2: Formula):
-        super().__init__("Equivalent")
-        self.formula1 = f1
-        self.formula2 = f2
+        super().__init__("Equivalent", f1, f2)
 
     def __repr__(self):
-        return f"({self.formula1!r} <-> {self.formula2!r})"
+        return f"({self.formula1!r} ↔ {self.formula2!r})"
 
 
-class Not(BinaryLogicalConnector):
+class Not(FoLOperator):
     def __init__(self, formula: Formula):
-        super().__init__("Or")
+        super().__init__("Not")
         self.formula = formula
 
     def __repr__(self):
-        return f"(Not {self.formula!r})"
+        return f"(¬ {self.formula!r})"
+
+    def recursive_apply(self, function):
+        self.formula = function(self.formula)
+
+    def __eq__(self, other):
+        if not isinstance(other, Not):
+            return False
+        return self.formula == other.formula
