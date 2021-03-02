@@ -3,12 +3,13 @@ from typing import List, Union, Tuple
 
 
 class Term(object):
-    def __init__(self, symbol: Union[ConstantSymbol, FunctionalSymbol, Variable], param: List[Term] = None):
+    def __init__(self, symbol: Union[ConstantSymbol, FunctionalSymbol, Variable], param: List[Term] = None,
+                 init_with_none_list: bool = False):
 
         if (isinstance(symbol, ConstantSymbol) or isinstance(symbol, Variable)) and param is not None:
             raise Exception("constant symbol or variable should not have param")
 
-        if isinstance(symbol, FunctionalSymbol) and (param is None or len(param) != symbol.ar):
+        if isinstance(symbol, FunctionalSymbol) and (param is None or len(param) != symbol.ar) and not init_with_none_list:
             raise Exception("functional symbol with incorrect number of param")
 
         self.symbol = symbol
@@ -39,7 +40,7 @@ class ConstantSymbol(Symbol, Term):
 class FunctionalSymbol(Symbol, Term):
     def __init__(self, name: str, ar: int):
         Symbol.__init__(self, name, ar)
-        Term.__init__(self, self)
+        Term.__init__(self, self, None, init_with_none_list=True)
 
     def __repr__(self) -> str:
         return f"FS({self.name!r}, {self.ar!r})"
@@ -63,6 +64,14 @@ class Variable(Symbol, Term):
 
     def __repr__(self):
         return f"Var({self.name!r})"
+
+    def __eq__(self, other):
+        if not isinstance(other, Variable):
+            return False
+        return self.name == other.name
+
+    def __hash__(self) -> int:
+        return hash(self.name)
 
 
 class Formula(object):
@@ -107,7 +116,7 @@ class FoLOperator(Formula):
     def __repr__(self) -> str:
         return f"FoLOperator({self.name!r})"
 
-    def recursive_apply(self, function):
+    def recursive_apply(self, function, **kwargs):
         raise Exception("no apply on base")
 
 
@@ -120,8 +129,8 @@ class Quantifier(FoLOperator):
     def __repr__(self):
         return f"Quantifier({self.name!r} {self.var!r} {self.formula!r})"
 
-    def recursive_apply(self, function):
-        self.formula = function(self.formula)
+    def recursive_apply(self, function, **kwargs):
+        self.formula = function(self.formula, **kwargs)
 
 
 class ForAll(Quantifier):
@@ -149,9 +158,9 @@ class BinaryLogicalConnector(FoLOperator):
     def __repr__(self) -> str:
         return f"BinaryLogicalConnector({self.name!r})"
 
-    def recursive_apply(self, function):
-        self.formula1 = function(self.formula1)
-        self.formula2 = function(self.formula2)
+    def recursive_apply(self, function, **kwargs):
+        self.formula1 = function(self.formula1, **kwargs)
+        self.formula2 = function(self.formula2, **kwargs)
 
     def __eq__(self, other: BinaryLogicalConnector):
         return self.name == other.name and self.formula1 == other.formula1 and self.formula2 == other.formula2
@@ -198,8 +207,8 @@ class Not(FoLOperator):
     def __repr__(self):
         return f"(¬ {self.formula!r})"
 
-    def recursive_apply(self, function):
-        self.formula = function(self.formula)
+    def recursive_apply(self, function, **kwargs):
+        self.formula = function(self.formula, **kwargs)
 
     def __eq__(self, other):
         if not isinstance(other, Not):
