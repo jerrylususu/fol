@@ -18,6 +18,19 @@ class Term(object):
     def __repr__(self):
         return f"T({self.symbol!r}, {self.param!r})"
 
+    def __eq__(self, other):
+        return isinstance(other, Term) and self.symbol == other.symbol and self.param == other.param
+
+    def __hash__(self):
+        # pretty hacky here...
+        return hash(self.__repr__())
+
+    def recursive_apply(self, func, **kwargs):
+        if self.param is None:
+            return
+        for idx in range(len(self.param)):
+            self.param[idx] = func(self.param[idx], **kwargs)
+
 
 class Symbol(object):
     def __init__(self, name: str, ar: int):
@@ -26,6 +39,12 @@ class Symbol(object):
 
     def __repr__(self):
         return f"S({self.name!r}, {self.ar!r})"
+
+    def __hash__(self):
+        return hash(self.__repr__())
+
+    def __eq__(self, other):
+        return isinstance(other, Symbol) and self.name == other.name and self.ar == other.ar
 
 
 class ConstantSymbol(Symbol, Term):
@@ -45,6 +64,8 @@ class FunctionalSymbol(Symbol, Term):
     def __repr__(self) -> str:
         return f"FS({self.name!r}, {self.ar!r})"
 
+    def __call__(self, *param: Term) -> Term:
+        return Term(self, list(param))
 
 class PredicateSymbol(Symbol):
     def __init__(self, name: str, ar: int):
@@ -107,6 +128,11 @@ class AtomicFormula(Formula):
             return False
         return self.symbol == other.symbol and self.param == other.param
 
+    def recursive_apply(self, func, **kwargs):
+        if self.param is None:
+            return
+        for idx in range(len(self.param)):
+            self.param[idx] = func(self.param[idx], **kwargs)
 
 class FoLOperator(Formula):
     def __init__(self, name: str):
@@ -205,7 +231,7 @@ class Not(FoLOperator):
         self.formula = formula
 
     def __repr__(self):
-        return f"(¬ {self.formula!r})"
+        return f"¬({self.formula!r})"
 
     def recursive_apply(self, function, **kwargs):
         self.formula = function(self.formula, **kwargs)
@@ -214,3 +240,36 @@ class Not(FoLOperator):
         if not isinstance(other, Not):
             return False
         return self.formula == other.formula
+
+
+class Literal(object):
+    def __init__(self, formula: Union[AtomicFormula, Not]):
+        self.formula: AtomicFormula = formula
+        self.negative: bool = False
+        if not (isinstance(formula, AtomicFormula) or isinstance(formula, Not)):
+            raise Exception("incorrect literal initialization: class incompatible")
+        if isinstance(formula, Not) and not isinstance(formula.formula, AtomicFormula):
+            raise Exception("incorrect literal initialization: not negation of atomic formula")
+        if isinstance(formula, Not):
+            self.formula: AtomicFormula = formula.formula
+            self.negative = True
+
+    def __repr__(self):
+        return f"{'¬' if self.negative else ''}L({self.formula!r})"
+
+    def __eq__(self, other):
+
+        return isinstance(other, Literal) and self.negative == other.negative and self.formula == other.formula
+
+
+class Substitution(object):
+    def __init__(self, var: Variable, term: Term):
+
+        if not isinstance(var, Variable) or not isinstance(term, Term):
+            raise Exception("substitution error")
+
+        self.var = var
+        self.term = term
+
+    def __repr__(self):
+        return f"ST[{self.var!r}/{self.term!r}]"

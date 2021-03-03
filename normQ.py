@@ -232,6 +232,30 @@ def deduplicate(f: Formula) -> Formula:
         return f
 
 
+def strip(f: Formula) -> Formula:
+    if isinstance(f, AtomicFormula):
+        return f
+
+    if isinstance(f, Quantifier):
+        if isinstance(f, ForAll):
+            return strip(f.formula)
+        else:
+            raise Exception("should not have other quantifier at this stage")
+
+    if isinstance(f, FoLOperator):
+        f.recursive_apply(deduplicate)
+        return f
+
+def split_to_literal(f: Formula, literals: Set[Literal]):
+
+    if isinstance(f, Not):
+        literals.add(Literal(f))
+    elif isinstance(f, AtomicFormula):
+        literals.add(Literal(f))
+    elif isinstance(f, FoLOperator):
+        f.recursive_apply(split_to_literal, literals=literals)
+
+
 def to_CNF_Q(f: Formula) -> Formula:
     f = eliminate(f)
     f = push(f)
@@ -250,6 +274,7 @@ def to_CNF_Q(f: Formula) -> Formula:
     f = universal(f)
     f = distribute(f)
     f = deduplicate(f)
+    f = strip(f)
     return f
 
 
@@ -311,6 +336,14 @@ if __name__ == "__main__":
 
     formula = deduplicate(formula)
     print(formula)
+
+    formula = strip(formula)
+    print(formula)
+
+    literals = set()
+    split_to_literal(formula, literals=literals)
+    print(literals)
+
 
     # v0 = Variable("v0")
     # v1 = Variable("v1")
