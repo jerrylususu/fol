@@ -2,6 +2,7 @@ from folObj import *
 from typing import Iterable, Set
 from copy import copy
 
+
 def get_term_from_literal_position(literals: Iterable[Literal], pos: int) -> List[Term]:
     items = []
     for literal in literals:
@@ -18,8 +19,10 @@ def get_term_from_literal_position(literals: Iterable[Literal], pos: int) -> Lis
 def all_same_type(items: List) -> bool:
     return all(type(x) == type(items[0]) for x in items)
 
+
 def all_same_value(items: List) -> bool:
     return all(x == items[0] for x in items)
+
 
 def tree_compare(*current: Union[Symbol, Term, AtomicFormula, Literal], ds: List[Set[Union[Variable, Term]]]):
     current = list(current)
@@ -68,6 +71,7 @@ def recursive_check_var_in_term(var: Variable, term: Term) -> bool:
         results = [recursive_check_var_in_term(var, p) for p in term.param]
         return any(results)
 
+
 def generate_possible_pairs(ds: List[Set[Union[Variable, Term]]]) -> List[List[Tuple[Variable, Term]]]:
     all_pairs: List[List[Tuple[Variable, Term]]] = []
     for one_set in ds:
@@ -101,7 +105,7 @@ def apply_substitution(current: Union[Symbol, Term, AtomicFormula, Literal], sub
         return current
 
     if (isinstance(current, Term) or isinstance(current, AtomicFormula)) and (
-                isinstance(current.symbol, FunctionalSymbol) or isinstance(current.symbol, PredicateSymbol)):
+            isinstance(current.symbol, FunctionalSymbol) or isinstance(current.symbol, PredicateSymbol)):
         current.recursive_apply(apply_substitution, substitutions=substitutions)
         return current
 
@@ -149,9 +153,7 @@ def find_mgu(*literals: Literal, substitutions: List[Substitution]) -> Tuple[boo
     return False, []
 
 
-
 def flatten_literal_tree(current: Union[Symbol, Term, AtomicFormula, Literal], items: List[str]):
-
     if isinstance(current, ConstantSymbol):
         items.append(current.__repr__())
     elif isinstance(current, Variable):
@@ -173,18 +175,13 @@ def flatten_literal_tree(current: Union[Symbol, Term, AtomicFormula, Literal], i
         flatten_literal_tree(current.formula, items=items)
 
 
-
-
-
 # ds: disagreement set
 # def compare_literal_generate_ds(literals: Iterable[Literal], ds: Set[Set[Term]]):
 #     current_set: Set[Term] = set()
 #     for literal in literals:
 
 
-
 # apply substitution
-
 
 
 if __name__ == "__main__":
@@ -201,16 +198,22 @@ if __name__ == "__main__":
     b = ConstantSymbol("b")
 
     # 2.1
-    # formula1 = P(a, x)
-    # formula2 = P(y, y)
+    formula1 = P(a, x)
+    formula2 = P(y, y)
 
     # 2.2
     # formula1 = P(g(x), z)
     # formula2 = P(g(y), g(z))
 
     # 2.3
-    formula1 = P(g(x), y)
-    formula2 = P(y, h(x))
+    # formula1 = P(g(x), y)
+    # formula2 = P(y, h(x))
+
+    # formula1 = P(x,g(y))
+    # formula2 = P(y,g(x))
+
+    # formula1 = P(y, f(x,y))
+    # formula2 = P(g(z), f(a,z))
 
     # 2.4
     # formula1 = P(x, g(x))

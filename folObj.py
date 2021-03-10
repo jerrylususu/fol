@@ -257,8 +257,10 @@ class Literal(object):
     def __repr__(self):
         return f"{'¬' if self.negative else ''}L({self.formula!r})"
 
-    def __eq__(self, other):
+    def __hash__(self):
+        return hash(self.__repr__())
 
+    def __eq__(self, other):
         return isinstance(other, Literal) and self.negative == other.negative and self.formula == other.formula
 
 

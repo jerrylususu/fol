@@ -164,7 +164,7 @@ def universal(f: Formula) -> Formula:
             connector = type(f)
             f.recursive_apply(universal)
 
-            if not isinstance(f.formula1, Quantifier) and not isinstance(f.formula2, Quantifier):
+            if not (isinstance(f.formula1, Quantifier) and isinstance(f.formula2, Quantifier)):
                 return f
 
             var1, f1 = None, None
@@ -246,6 +246,7 @@ def strip(f: Formula) -> Formula:
         f.recursive_apply(deduplicate)
         return f
 
+
 def split_to_literal(f: Formula, literals: Set[Literal]):
 
     if isinstance(f, Not):
@@ -286,13 +287,19 @@ if __name__ == "__main__":
     # formula = Implies(ForAll(x, A(x)), Exists(x, B(x)))
 
     # Worksheet2, Q1.1
-    v0 = Variable("v0")
-    v1 = Variable("v1")
-    v2 = Variable("v2")
-    P = PredicateSymbol("P", 3)
-    Q = PredicateSymbol("Q", 3)
+    # v0 = Variable("v0")
+    # v1 = Variable("v1")
+    # v2 = Variable("v2")
+    # P = PredicateSymbol("P", 3)
+    # Q = PredicateSymbol("Q", 3)
 
-    formula = Implies(ForAll(v0, Exists(v1, ForAll(v2, P(v0, v1, v2)))), ForAll(v1, Exists(v2, Q(v1, v2, v0))))
+    # formula = Implies(ForAll(v0, Exists(v1, ForAll(v2, P(v0, v1, v2)))), ForAll(v1, Exists(v2, Q(v1, v2, v0))))
+
+    x = Variable("x")
+    P = PredicateSymbol("P", 1)
+
+    formula = Not(Implies(ForAll(x, P(x)), Not(Exists(x, Not(P(x))))))
+    # formula = Not(Or(ForAll(x, P(x)), ForAll(x, Not(P(x)))))
 
     # # Worksheet1, Q8
     # x = Variable("x")
