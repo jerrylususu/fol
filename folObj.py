@@ -128,6 +128,9 @@ class AtomicFormula(Formula):
             return False
         return self.symbol == other.symbol and self.param == other.param
 
+    def __hash__(self):
+        return hash(self.__repr__())
+
     def recursive_apply(self, func, **kwargs):
         if self.param is None:
             return
@@ -189,7 +192,7 @@ class BinaryLogicalConnector(FoLOperator):
         self.formula2 = function(self.formula2, **kwargs)
 
     def __eq__(self, other: BinaryLogicalConnector):
-        return self.name == other.name and self.formula1 == other.formula1 and self.formula2 == other.formula2
+        return isinstance(other, BinaryLogicalConnector) and self.name == other.name and self.formula1 == other.formula1 and self.formula2 == other.formula2
 
 
 class And(BinaryLogicalConnector):

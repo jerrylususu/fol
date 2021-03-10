@@ -222,6 +222,8 @@ def deduplicate(f: Formula) -> Formula:
 
     elif isinstance(f, Or):
         if f.formula1 == f.formula2:
+            print(type(f), type(f.formula1), type(f.formula2))
+            print(f)
             return deduplicate(f.formula1)
         else:
             f.recursive_apply(deduplicate)
@@ -247,12 +249,27 @@ def strip(f: Formula) -> Formula:
         return f
 
 
-def split_to_literal(f: Formula, literals: Set[Literal]):
+def split_to_literal(f: Formula, literals: List[Set[Literal]]):
+    if isinstance(f, Not) or isinstance(f, AtomicFormula):
+        if len(literals) == 0:
+            literals.append(set())
+        literals[0].add(Literal(f))
 
-    if isinstance(f, Not):
-        literals.add(Literal(f))
-    elif isinstance(f, AtomicFormula):
-        literals.add(Literal(f))
+    elif isinstance(f, And):
+        # should only happen at first layer
+        list1, list2 = [set()], [set()]
+        split_to_literal(f.formula1, list1)
+        split_to_literal(f.formula2, list2)
+        literals.extend(list1)
+        literals.extend(list2)
+        # nasty hack to remove empty sets
+        delete_idxs = []
+        for idx, literal_set in enumerate(literals):
+            if len(literal_set) == 0:
+                delete_idxs.append(idx)
+        for idx in delete_idxs[::-1]:
+            del literals[idx]
+
     elif isinstance(f, FoLOperator):
         f.recursive_apply(split_to_literal, literals=literals)
 
@@ -295,10 +312,10 @@ if __name__ == "__main__":
 
     # formula = Implies(ForAll(v0, Exists(v1, ForAll(v2, P(v0, v1, v2)))), ForAll(v1, Exists(v2, Q(v1, v2, v0))))
 
-    x = Variable("x")
-    P = PredicateSymbol("P", 1)
-
-    formula = Not(Implies(ForAll(x, P(x)), Not(Exists(x, Not(P(x))))))
+    # x = Variable("x")
+    # P = PredicateSymbol("P", 1)
+    #
+    # formula = Not(Implies(ForAll(x, P(x)), Not(Exists(x, Not(P(x))))))
     # formula = Not(Or(ForAll(x, P(x)), ForAll(x, Not(P(x)))))
 
     # # Worksheet1, Q8
@@ -309,6 +326,30 @@ if __name__ == "__main__":
     # R = PredicateSymbol("R", 2)
     #
     # formula = Not(ForAll(x, Exists(y, Implies(And(P(x,y), Q(x,y)), R(x,y)))))
+
+    # Worksheet2, Q5
+    # x = Variable("x")
+    # y = Variable("y")
+    # z = Variable("z")
+    # Peter = ConstantSymbol("Peter")
+    # Anna = ConstantSymbol("Anna")
+    # Hans = ConstantSymbol("Hans")
+    # Child = PredicateSymbol("Child", 2)
+    # Descendant = PredicateSymbol("Descendant", 2)
+    #
+    # formula = ForAll(x, ForAll(y, Implies(Or(Child(x,y), Exists(z, And(Child(x,z), Descendant(z,y)))),  Descendant(x,y))))
+
+    # worksheet 2, q4
+    B = PredicateSymbol("Barber", 1)
+    S = PredicateSymbol("Shave", 2)
+    x = Variable("x")
+    y = Variable("y")
+
+    f1 = ForAll(x, ForAll(y, Implies(And(B(x), Not(S(y, y))), S(x, y))))
+    f2 = Not(Exists(x, Exists(y, Or(B(x), Or(S(x, y), S(y, y))))))
+    query = Not(Exists(x, B(x)))
+    formula = Not(query)
+
 
     print(formula)
 
@@ -347,10 +388,9 @@ if __name__ == "__main__":
     formula = strip(formula)
     print(formula)
 
-    literals = set()
+    literals = []
     split_to_literal(formula, literals=literals)
     print(literals)
-
 
     # v0 = Variable("v0")
     # v1 = Variable("v1")

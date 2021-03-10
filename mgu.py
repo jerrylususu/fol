@@ -175,6 +175,13 @@ def flatten_literal_tree(current: Union[Symbol, Term, AtomicFormula, Literal], i
         flatten_literal_tree(current.formula, items=items)
 
 
+def find_mgu_wrapper(literal1: Literal, literal2: Literal) -> Tuple[bool, List[Substitution]]:
+    ds = []
+    tree_compare(literal1, literal2, ds=ds)
+    subs = []
+    return find_mgu(literal1, literal2, substitutions=subs)
+
+
 # ds: disagreement set
 # def compare_literal_generate_ds(literals: Iterable[Literal], ds: Set[Set[Term]]):
 #     current_set: Set[Term] = set()
