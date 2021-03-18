@@ -139,17 +139,21 @@ def existential(f: Formula, fs: FuncStorage, remap: Dict[Variable, Union[Functio
         return f
 
     if isinstance(f, Quantifier):
+        print("debug1", f, forall_path)
+
         if isinstance(f, ForAll):
             mod_forall_path = forall_path.copy()
             mod_forall_path.append(f.var)
             return ForAll(f.var, existential(f.formula, fs=fs, remap=remap, forall_path=mod_forall_path))
         elif isinstance(f, Exists):
             mod_remap = remap.copy()
+            print("debug", f, forall_path)
             new_func = fs.get_path_function(f.var, forall_path)
             mod_remap[f.var] = new_func
             return existential(f.formula, fs=fs, remap=mod_remap, forall_path=forall_path)
 
     if isinstance(f, FoLOperator):
+        print("debug2", f, forall_path)
         f.recursive_apply(existential, fs=fs, remap=remap, forall_path=forall_path)
         return f
 
@@ -340,20 +344,27 @@ if __name__ == "__main__":
     # formula = ForAll(x, ForAll(y, Implies(Or(Child(x,y), Exists(z, And(Child(x,z), Descendant(z,y)))),  Descendant(x,y))))
 
     # worksheet 2, q4
-    B = PredicateSymbol("Barber", 1)
-    S = PredicateSymbol("Shave", 2)
+    # B = PredicateSymbol("Barber", 1)
+    # S = PredicateSymbol("Shave", 2)
+    # x = Variable("x")
+    # y = Variable("y")
+    #
+    # f1 = ForAll(x, ForAll(y, Implies(And(B(x), Not(S(y, y))), S(x, y))))
+    # f2 = Not(Exists(x, Exists(y, Or(B(x), Or(S(x, y), S(y, y))))))
+    # query = Not(Exists(x, B(x)))
+    # formula = Not(query)
+
+    # worksheet1, 5.6
+    # known bug
     x = Variable("x")
     y = Variable("y")
-
-    f1 = ForAll(x, ForAll(y, Implies(And(B(x), Not(S(y, y))), S(x, y))))
-    f2 = Not(Exists(x, Exists(y, Or(B(x), Or(S(x, y), S(y, y))))))
-    query = Not(Exists(x, B(x)))
+    D = PredicateSymbol("D", 1)
+    query = Exists(x, Implies(D(x), ForAll(y, D(y))))
     formula = Not(query)
 
+    print("Input", formula)
 
-    print(formula)
-
-    # print("Final", to_CNF_Q(formula))
+    print("Final", to_CNF_Q(formula))
 
     formula = eliminate(formula)
     print(formula)
@@ -367,6 +378,8 @@ if __name__ == "__main__":
 
     formula = standardize(formula, vs=vs, remap=remap, path=path)
     print(formula)
+
+    print("wtf")
 
     fs = FuncStorage()
     remap2 = dict()

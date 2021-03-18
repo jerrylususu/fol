@@ -191,20 +191,29 @@ if __name__ == "__main__":
     # f2 = Child(Peter, Anna)
     # f3 = Child(Anna, Hans)
     # query = Descendant(Peter, Hans)
-
+    #
     # print("Resolutes:", resolution_wrapper([f1, f2,f3,Not(query)]))
 
     # worksheet 2, q4 / assignment 1 q4
-    B = PredicateSymbol("Barber", 1)
-    S = PredicateSymbol("Shave", 2)
+    # B = PredicateSymbol("Barber", 1)
+    # S = PredicateSymbol("Shave", 2)
+    # x = Variable("x")
+    # y = Variable("y")
+    #
+    # f1 = ForAll(x, ForAll(y, Implies(And(B(x), Not(S(y, y))), S(x, y))))
+    # f2 = Not(Exists(x, Exists(y, And(B(x), And(S(x, y), S(y, y))))))
+    # query = Not(Exists(x, B(x)))
+    #
+    # print("Resolutes:", resolution_wrapper([f1, f2, Not(query)]))
+
+    # worksheet1, 5.6
     x = Variable("x")
     y = Variable("y")
+    D = PredicateSymbol("D", 1)
+    query = Exists(x, Implies(D(x), ForAll(y, D(y))))
 
-    f1 = ForAll(x, ForAll(y, Implies(And(B(x), Not(S(y, y))), S(x, y))))
-    f2 = Not(Exists(x, Exists(y, And(B(x), And(S(x, y), S(y, y))))))
-    query = Not(Exists(x, B(x)))
+    print("Resolutes:", resolution_wrapper([Not(query)]))
 
-    print("Resolutes:", resolution_wrapper([f1, f2, Not(query)]))
 
     # worksheet 2, q3.1
     # P = PredicateSymbol("P",2)
