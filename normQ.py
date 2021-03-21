@@ -2,7 +2,7 @@
 
 from folObj import *
 from typing import Set, Dict
-
+from multi import remove_duplicate_multiarg, expand_multi
 
 def eliminate(f: Formula) -> Formula:
     if isinstance(f, AtomicFormula):
@@ -65,7 +65,9 @@ class VarStorage(object):
         return new_var
 
 
-# FIXME: out of scope variable (worksheet2, Q1-1)
+# FIXME: bug on out of scope variable (worksheet2, Q1-1)
+# TODO: description: 考虑worksheet2,Q1-1,最后再加一个 AND Q(v0,v0,v0),两者经过的量词路径相同，分配到的新变量也应该相同
+
 # vs: check if variable needs to be changed
 # remap: map of variables that need to be renamed / replaced
 # path: the path of quantifiers from root to current formula
@@ -77,7 +79,9 @@ def standardize(f: Formula, vs: VarStorage, remap: Dict[Variable, Variable], pat
                     f.param[idx] = remap[p]
                 elif p not in path:
                     # out of scope variable
-                    f.param[idx] = vs.generate_new_var()
+                    if p not in remap:
+                        remap[p] = vs.generate_new_var()
+                    f.param[idx] = remap[p]
         return f
 
     if isinstance(f, Quantifier):
@@ -139,7 +143,6 @@ def existential(f: Formula, fs: FuncStorage, remap: Dict[Variable, Union[Functio
         return f
 
     if isinstance(f, Quantifier):
-        print("debug1", f, forall_path)
 
         if isinstance(f, ForAll):
             mod_forall_path = forall_path.copy()
@@ -147,13 +150,11 @@ def existential(f: Formula, fs: FuncStorage, remap: Dict[Variable, Union[Functio
             return ForAll(f.var, existential(f.formula, fs=fs, remap=remap, forall_path=mod_forall_path))
         elif isinstance(f, Exists):
             mod_remap = remap.copy()
-            print("debug", f, forall_path)
             new_func = fs.get_path_function(f.var, forall_path)
             mod_remap[f.var] = new_func
             return existential(f.formula, fs=fs, remap=mod_remap, forall_path=forall_path)
 
     if isinstance(f, FoLOperator):
-        print("debug2", f, forall_path)
         f.recursive_apply(existential, fs=fs, remap=remap, forall_path=forall_path)
         return f
 
@@ -226,8 +227,8 @@ def deduplicate(f: Formula) -> Formula:
 
     elif isinstance(f, Or):
         if f.formula1 == f.formula2:
-            print(type(f), type(f.formula1), type(f.formula2))
-            print(f)
+            # print(type(f), type(f.formula1), type(f.formula2))
+            # print(f)
             return deduplicate(f.formula1)
         else:
             f.recursive_apply(deduplicate)
@@ -295,17 +296,20 @@ def to_CNF_Q(f: Formula) -> Formula:
     f = existential(f, fs=fs, remap=remap2, forall_path=forall_path)
     f = universal(f)
     f = distribute(f)
+    f = expand_multi(remove_duplicate_multiarg(f))
     f = deduplicate(f)
     f = strip(f)
     return f
 
 
 if __name__ == "__main__":
+    # ---- INPUT AREA BEGIN -----
+
     # x = Variable("x")
     # A = PredicateSymbol("A", 1)
     # B = PredicateSymbol("B", 1)
     #
-    # formula = Implies(ForAll(x, A(x)), Exists(x, B(x)))
+    # formula = Not(Implies(ForAll(x, A(x)), Exists(x, B(x))))
 
     # Worksheet2, Q1.1
     # v0 = Variable("v0")
@@ -343,92 +347,73 @@ if __name__ == "__main__":
     #
     # formula = ForAll(x, ForAll(y, Implies(Or(Child(x,y), Exists(z, And(Child(x,z), Descendant(z,y)))),  Descendant(x,y))))
 
-    # worksheet 2, q4
-    # B = PredicateSymbol("Barber", 1)
-    # S = PredicateSymbol("Shave", 2)
+    # worksheet1, 5.6
+    # known bug, won't work
     # x = Variable("x")
     # y = Variable("y")
-    #
-    # f1 = ForAll(x, ForAll(y, Implies(And(B(x), Not(S(y, y))), S(x, y))))
-    # f2 = Not(Exists(x, Exists(y, Or(B(x), Or(S(x, y), S(y, y))))))
-    # query = Not(Exists(x, B(x)))
+    # D = PredicateSymbol("D", 1)
+    # query = Exists(x, Implies(D(x), ForAll(y, D(y))))
     # formula = Not(query)
 
-    # worksheet1, 5.6
-    # known bug
+    # worksheet 2, q4
+    B = PredicateSymbol("Barber", 1)
+    S = PredicateSymbol("Shave", 2)
     x = Variable("x")
     y = Variable("y")
-    D = PredicateSymbol("D", 1)
-    query = Exists(x, Implies(D(x), ForAll(y, D(y))))
-    formula = Not(query)
+
+    f1 = ForAll(x, ForAll(y, Implies(And(B(x), Not(S(y, y))), S(x, y))))
+    f2 = Not(Exists(x, Exists(y, Or(B(x), Or(S(x, y), S(y, y))))))
+    query = Not(Exists(x, B(x)))
+
+    # f = ForAll(x, ForAll(x, B(x)))
+    formula = f1
+
+    # ---- INPUT AREA END -----
+
+    # P = PredicateSymbol("P",1)
+    # Q = PredicateSymbol("Q",1)
+    # R = PredicateSymbol("R",1)
+    # x = Variable("x")
+    # f8 = ForAll(x, And(Or(P(x), P(x)), And(P(x), P(x))))
+    # formula = f8
 
     print("Input", formula)
 
-    print("Final", to_CNF_Q(formula))
+    # print("Output", to_CNF_Q(formula))
 
-    formula = eliminate(formula)
-    print(formula)
+    f = formula
+    f = eliminate(f)
+    print(f)
+    f = push(f)
+    print(f)
 
-    formula = push(formula)
-    print(formula)
 
     vs = VarStorage()
     remap = dict()
     path = []
 
-    formula = standardize(formula, vs=vs, remap=remap, path=path)
-    print(formula)
+    f = standardize(f, vs=vs, remap=remap, path=path)
+    print(f)
 
-    print("wtf")
 
     fs = FuncStorage()
     remap2 = dict()
     forall_path = []
 
-    # 多次嵌套会有状态重复？？？
-    formula = existential(formula, fs=fs, remap=remap2, forall_path=forall_path)
-    print(formula)
+    f = existential(f, fs=fs, remap=remap2, forall_path=forall_path)
+    print(f)
 
-    formula = universal(formula)
-    print(formula)
+    f = universal(f)
+    print(f)
 
-    formula = distribute(formula)
-    print(formula)
+    f = distribute(f)
+    print(f)
 
-    formula = deduplicate(formula)
-    print(formula)
+    f = remove_duplicate_multiarg(f)
+    print(f)
 
-    formula = strip(formula)
-    print(formula)
+    f = expand_multi(f)
+    print(f)
 
-    literals = []
-    split_to_literal(formula, literals=literals)
-    print(literals)
-
-    # v0 = Variable("v0")
-    # v1 = Variable("v1")
-    # v2 = Variable("v2")
-    # P = PredicateSymbol("P", 3)
-    # Q = PredicateSymbol("Q", 3)
-    #
-    # formula = Implies(ForAll(v0, Exists(v1, ForAll(v2, P(v0, v1, v2)))), ForAll(v1, Exists(v2, Q(v1, v2, v0))))
-    #
-    # vs = VarStorage()
-    # remap = dict()
-    # path = []
-    #
-    # print(formula)
-    # print(eliminate(formula))
-    # print(push(eliminate(formula)))
-    # print(standardize(push(eliminate(formula)), vs=vs, remap=remap, path=path))
-    #
-    # vs = VarStorage()
-    # remap = dict()
-    # path = []
-    #
-    # fs = FuncStorage()
-    # remap2 = dict()
-    # forall_path = []
-    #
-    # print(existential(standardize(push(eliminate(formula)), vs=vs, remap=remap, path=path), fs=fs, remap=remap2, forall_path=forall_path))
-    # print(fs.var_func_dict)
+    f = deduplicate(f)
+    print("Output", f)

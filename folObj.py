@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import List, Union, Tuple
+from typing import List, Union, Tuple, Set
 
 
 class Term(object):
@@ -278,3 +278,44 @@ class Substitution(object):
 
     def __repr__(self):
         return f"ST[{self.var!r}/{self.term!r}]"
+
+
+class MultiLogicalConnector(FoLOperator):
+    def __init__(self, name: str, formulas: Set[Formula]):
+        super(MultiLogicalConnector, self).__init__(name)
+        self.formulas = formulas
+
+    def __repr__(self) -> str:
+        return f"MultiLogicalConnector({self.name!r})"
+
+    def recursive_apply(self, function, **kwargs):
+        raise Exception("not implemented")
+
+
+class MultiAnd(MultiLogicalConnector):
+    def __init__(self, formulas: Set[Formula]):
+        super(MultiAnd, self).__init__("MultiAnd", formulas)
+
+    def __repr__(self) -> str:
+        return f"MultiAnd({self.formulas!r})"
+
+    def __hash__(self):
+        return hash(self.__repr__())
+
+    def __eq__(self, other):
+        return isinstance(other, MultiAnd) and self.formulas == other.formulas
+
+
+class MultiOr(MultiLogicalConnector):
+    def __init__(self, formulas: Set[Formula]):
+        super(MultiOr, self).__init__("MultiOr", formulas)
+
+    def __repr__(self) -> str:
+        return f"MultiOr({self.formulas!r})"
+
+    def __hash__(self):
+        return hash(self.__repr__())
+
+    def __eq__(self, other):
+        return isinstance(other, MultiOr) and self.formulas == other.formulas
+

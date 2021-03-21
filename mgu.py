@@ -193,6 +193,8 @@ def find_mgu_wrapper(literal1: Literal, literal2: Literal) -> Tuple[bool, List[S
 
 if __name__ == "__main__":
 
+    # ---- INPUT AREA BEGIN -----
+
     x = Variable("x")
     y = Variable("y")
     z = Variable("z")
@@ -246,12 +248,15 @@ if __name__ == "__main__":
     # formula1 = P(y, f(x,y))
     # formula2 = P(g(z), f(a,z))
 
+    # ---- INPUT AREA END -----
+
+
     literal1 = Literal(formula1)
     literal2 = Literal(formula2)
     # literal3 = Literal(formula3)
 
-    print(literal1)
-    print(literal2)
+    print("input literal 1:", literal1)
+    print("input literal 2:", literal2)
 
     # literals = set()
     # literals.add(literal1)
@@ -261,15 +266,16 @@ if __name__ == "__main__":
 
     ds = []
     tree_compare(literal1, literal2, ds=ds)
-    print(ds)
+    # print(ds)
 
     all_pairs = generate_possible_pairs(ds)
-    print(all_pairs)
+    # print(all_pairs)
 
     subs = []
     found, found_subs = find_mgu(literal1, literal2, substitutions=subs)
-    print(found, found_subs)
+    print("find MGU:", found, found_subs)
     if found:
+        print("after substitution")
         apply_substitution(literal1, found_subs)
         apply_substitution(literal2, found_subs)
         print(literal1)

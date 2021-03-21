@@ -115,7 +115,7 @@ def do_resolution(cs: ClauseStorage) -> bool:
             print("done", combination, "new:", new_clause_id, new_clause)
         else:
             cs.note_impossible(combination)
-            print("impossible", combination)
+            # print("impossible", combination)
 
     return False
 
@@ -177,6 +177,9 @@ def resolution_wrapper(formulas: Iterable[Formula]) -> bool:
 
 
 if __name__ == "__main__":
+    # ---- INPUT AREA BEGIN -----
+
+
     # worksheet 2, q5
     # x = Variable("x")
     # y = Variable("y")
@@ -195,24 +198,25 @@ if __name__ == "__main__":
     # print("Resolutes:", resolution_wrapper([f1, f2,f3,Not(query)]))
 
     # worksheet 2, q4 / assignment 1 q4
-    # B = PredicateSymbol("Barber", 1)
-    # S = PredicateSymbol("Shave", 2)
-    # x = Variable("x")
-    # y = Variable("y")
-    #
-    # f1 = ForAll(x, ForAll(y, Implies(And(B(x), Not(S(y, y))), S(x, y))))
-    # f2 = Not(Exists(x, Exists(y, And(B(x), And(S(x, y), S(y, y))))))
-    # query = Not(Exists(x, B(x)))
-    #
-    # print("Resolutes:", resolution_wrapper([f1, f2, Not(query)]))
-
-    # worksheet1, 5.6
+    B = PredicateSymbol("Barber", 1)
+    S = PredicateSymbol("Shave", 2)
     x = Variable("x")
     y = Variable("y")
-    D = PredicateSymbol("D", 1)
-    query = Exists(x, Implies(D(x), ForAll(y, D(y))))
 
-    print("Resolutes:", resolution_wrapper([Not(query)]))
+    f1 = ForAll(x, ForAll(y, Implies(And(B(x), Not(S(y, y))), S(x, y))))
+    f2 = Not(Exists(x, Exists(y, And(B(x), And(S(x, y), S(y, y))))))
+    query = Not(Exists(x, B(x)))
+
+    print("Resolutes:", resolution_wrapper([f1, f2, Not(query)]))
+
+    # worksheet1, 5.6
+    # known bug, won't work
+    # x = Variable("x")
+    # y = Variable("y")
+    # D = PredicateSymbol("D", 1)
+    # query = Exists(x, Implies(D(x), ForAll(y, D(y))))
+    #
+    # print("Resolutes:", resolution_wrapper([Not(query)]))
 
 
     # worksheet 2, q3.1
@@ -232,3 +236,6 @@ if __name__ == "__main__":
     # query = Implies(ForAll(x, Implies(P(x), Q(x))), Implies(ForAll(x, P(x)), ForAll(x, Q(x))))
     #
     # print("Resolutes:", resolution_wrapper([Not(query)]))
+
+
+    # ---- INPUT AREA END -----
