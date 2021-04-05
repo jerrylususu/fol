@@ -38,7 +38,7 @@ class ClauseStorage(object):
         self.clause_set.add(frozenset(clause))
         self.map[self.counter] = frozenset(clause)
         self.counter += 1
-        for idx in range(1, self.counter - 1):
+        for idx in range(1, self.counter):
             self.todo.add((self.counter - 1, idx))
 
         return self.counter - 1

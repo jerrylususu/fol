@@ -152,6 +152,8 @@ class FoLOperator(Formula):
 class Quantifier(FoLOperator):
     def __init__(self, name: str, var: Variable, formula: Formula):
         super().__init__(name)
+        if not isinstance(var, Variable):
+            raise ValueError("not a variable")
         self.var = var
         self.formula = formula
 
@@ -198,7 +200,6 @@ class BinaryLogicalConnector(FoLOperator):
 class And(BinaryLogicalConnector):
     def __init__(self, f1: Formula, f2: Formula):
         super().__init__("And", f1, f2)
-        # FIXME: put into a list?
 
     def __repr__(self):
         return f"({self.formula1!r} ∧ {self.formula2!r})"

@@ -54,9 +54,9 @@ def remove_duplicate_multiarg(f: Formula) -> Formula:
             res1 = remove_duplicate_multiarg(f.formula1)
             res2 = remove_duplicate_multiarg(f.formula2)
 
-            print("debug", f)
-            print("h1", res1)
-            print("h2", res2)
+            # print("debug", f)
+            # print("h1", res1)
+            # print("h2", res2)
 
             # 1 check if duplicate
             if res1 == res2:

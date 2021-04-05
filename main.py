@@ -6,13 +6,16 @@ from folObj import *
 # all symbols (predicate, constant, functional) has a name
 # predicate and functional symbols have to specify argument count (ar)
 P = PredicateSymbol("P", 1)
-Q = PredicateSymbol("Q", 1)
+Q = PredicateSymbol("Q", 2)
+f = FunctionalSymbol("f", 1)
 a = ConstantSymbol("a")
 x = Variable("x")
+y = Variable("y")
 
 # then you can begin to write formulas
 # formulas are written in prefix
-formula = Exists(x, And(P(x), Q(x)))
+formula = Implies(Or(Not(P(x)), Q(x,y)), And(P(y), Q(y, f(x))))
+formula2 = ForAll(x, P(x))
 print(formula)
 
 # example 2, worksheet 2 q5
@@ -28,8 +31,8 @@ print(formula)
 # other important items
 
 # And/Or can only have 2 argument, for more you need nest them manually
-And(P(a), And(Q(a), P(x)))
+And(P(a), And(Q(a, x), P(x)))
 
 # For quantifiers, Use `ForAll` and `Exists`, and write variable as the first parameter
 ForAll(x, P(x))
-Exists(x, Q(x))
+Exists(x, Q(x, y))

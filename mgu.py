@@ -253,23 +253,9 @@ if __name__ == "__main__":
 
     literal1 = Literal(formula1)
     literal2 = Literal(formula2)
-    # literal3 = Literal(formula3)
 
     print("input literal 1:", literal1)
     print("input literal 2:", literal2)
-
-    # literals = set()
-    # literals.add(literal1)
-    # literals.add(literal2)
-
-    # print(get_term_from_literal_position(literals, 0))
-
-    ds = []
-    tree_compare(literal1, literal2, ds=ds)
-    # print(ds)
-
-    all_pairs = generate_possible_pairs(ds)
-    # print(all_pairs)
 
     subs = []
     found, found_subs = find_mgu(literal1, literal2, substitutions=subs)

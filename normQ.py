@@ -65,9 +65,6 @@ class VarStorage(object):
         return new_var
 
 
-# FIXME: bug on out of scope variable (worksheet2, Q1-1)
-# TODO: description: 考虑worksheet2,Q1-1,最后再加一个 AND Q(v0,v0,v0),两者经过的量词路径相同，分配到的新变量也应该相同
-
 # vs: check if variable needs to be changed
 # remap: map of variables that need to be renamed / replaced
 # path: the path of quantifiers from root to current formula
@@ -327,12 +324,13 @@ if __name__ == "__main__":
     # formula = Not(Or(ForAll(x, P(x)), ForAll(x, Not(P(x)))))
 
     # # Worksheet1, Q8
-    # x = Variable("x")
-    # y = Variable("y")
-    # P = PredicateSymbol("P", 2)
-    # Q = PredicateSymbol("Q", 2)
-    # R = PredicateSymbol("R", 2)
-    #
+    x = Variable("x")
+    y = Variable("y")
+    P = PredicateSymbol("P", 2)
+    Q = PredicateSymbol("Q", 2)
+    R = PredicateSymbol("R", 2)
+
+    formula = And(P(x,y), And(Q(x,y), P(x,y)))
     # formula = Not(ForAll(x, Exists(y, Implies(And(P(x,y), Q(x,y)), R(x,y)))))
 
     # Worksheet2, Q5
@@ -356,17 +354,17 @@ if __name__ == "__main__":
     # formula = Not(query)
 
     # worksheet 2, q4
-    B = PredicateSymbol("Barber", 1)
-    S = PredicateSymbol("Shave", 2)
-    x = Variable("x")
-    y = Variable("y")
-
-    f1 = ForAll(x, ForAll(y, Implies(And(B(x), Not(S(y, y))), S(x, y))))
-    f2 = Not(Exists(x, Exists(y, Or(B(x), Or(S(x, y), S(y, y))))))
-    query = Not(Exists(x, B(x)))
-
-    # f = ForAll(x, ForAll(x, B(x)))
-    formula = f1
+    # B = PredicateSymbol("Barber", 1)
+    # S = PredicateSymbol("Shave", 2)
+    # x = Variable("x")
+    # y = Variable("y")
+    #
+    # f1 = ForAll(x, ForAll(y, Implies(And(B(x), Not(S(y, y))), S(x, y))))
+    # f2 = Not(Exists(x, Exists(y, Or(B(x), Or(S(x, y), S(y, y))))))
+    # query = Not(Exists(x, B(x)))
+    #
+    # # f = ForAll(x, ForAll(x, B(x)))
+    # formula = f1
 
     # ---- INPUT AREA END -----
 
@@ -417,3 +415,7 @@ if __name__ == "__main__":
 
     f = deduplicate(f)
     print("Output", f)
+
+    li = []
+    split_to_literal(f, li)
+    print("Literals", li)
