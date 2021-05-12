@@ -1,5 +1,7 @@
 # First-order Logic Resoluter
 
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jerrylususu/fol/HEAD)
+
 Language: Python
 
 Environment Requirement: Python 3.8+
