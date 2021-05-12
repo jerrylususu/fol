@@ -12,6 +12,10 @@ a = ConstantSymbol("a")
 x = Variable("x")
 y = Variable("y")
 
+print(type(P), P)
+print(type(P(a)), P(a))
+
+
 # then you can begin to write formulas
 # formulas are written in prefix
 formula = Implies(Or(Not(P(x)), Q(x,y)), And(P(y), Q(y, f(x))))

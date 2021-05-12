@@ -209,6 +209,59 @@ if __name__ == "__main__":
 
     print("Resolutes:", resolution_wrapper([f1, f2, Not(query)]))
 
+
+    # final Q2
+    # CSCourse = PredicateSymbol("CSCourse",1)
+    # Test = PredicateSymbol("Test",2)
+    # Fail = PredicateSymbol("Fail",2)
+    # Easy = PredicateSymbol("Easy",1)
+    # Pass = PredicateSymbol("Pass",2)
+    #
+    # x = Variable("x")
+    # y = Variable("y")
+    # z = Variable("z")
+    #
+    # Exam1 = ConstantSymbol("Exam1")
+    # Class1 = ConstantSymbol("Class1")
+    #
+    #
+    # # has an issue on the semantic...
+    # # f2 Pass(z,y) -> Pass(z,x)
+    # f1 = ForAll(x, ForAll(y, Implies(And(CSCourse(x), Test(y,x)), Exists(z, Fail(z,x)))))
+    # f2 = ForAll(y, ForAll(x, Implies(And(Test(y,x), Easy(y)), ForAll(z, Pass(z,x)))))
+    # f3 = Not(Exists(x, Exists(y, And(Pass(x,y), Fail(x,y)))))
+    # f4 = And(Test(Exam1, Class1), Easy(Exam1))
+    # query = Not(CSCourse(Class1))
+    #
+    # print("Resolutes:", resolution_wrapper([f1,f2,f3,f4,Not(query)]))
+
+
+    # final q4
+    # x = Variable("x")
+    # y = Variable("y")
+    # z = Variable("z")
+    # w = Variable("w")
+    #
+    # R = PredicateSymbol("R",2)
+    # A = PredicateSymbol("A",1)
+    # B = PredicateSymbol("B",1)
+    #
+    # a = ConstantSymbol("a")
+    # # f = Not(Or(ForAll(y, Implies(R(x,y), A(y))), Exists(z, And(R(w,z), And(Not(A(z)), Not(B(z)))))))
+    # # f = Not(Or(Exists(x,ForAll(y, Implies(R(x,y), A(y)))), Exists(w,Exists(z, And(R(w,z), And(Not(A(z)), Not(B(z))))))))
+    #
+    # f = Exists(x,Not(Or(ForAll(y, Implies(R(x,y)
+    #                                       , A(y))), Exists(z, And(R(x,z), And(Not(A(z)), Not(B(z))))))))
+    #
+    # print("Resolutes:", resolution_wrapper([Not(f)]))
+
+
+    # f1 = Not(B(x))
+    # f2 = Or(Not(B(x)), Not(S(y,y)))
+    # f3 = Or(B(x), S(x,y))
+    # print("Resolutes:", resolution_wrapper([f1, f2, f3]))
+
+
     # worksheet1, 5.6
     # known bug, won't work
     # x = Variable("x")
